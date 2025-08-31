@@ -6,12 +6,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "app/components/ui/dropdown-menu";
 import { Button } from "app/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const columns: ColumnDef<TTeachers>[] = [
   {
@@ -64,6 +63,7 @@ const columns: ColumnDef<TTeachers>[] = [
 ];
 
 export default async function Teachers() {
+  const navigate = useNavigate();
   const data = await getTeachers();
 
   return (
@@ -76,6 +76,18 @@ export default async function Teachers() {
             <p className="font-semibold">Total Teachers</p>
             <p>500</p>
           </div>
+        </section>
+
+        <section className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              navigate("/dashboard/teachers/add");
+            }}
+          >
+            Add Teacher
+          </Button>
         </section>
 
         <div>

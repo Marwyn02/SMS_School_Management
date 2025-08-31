@@ -1,5 +1,5 @@
-import Teachers from "~/pages/admin/Teachers";
-import type { Route } from "../admin/+types/teachers";
+import Teachers from "~/pages/admin/teachers";
+import type { Route } from "../teachers/+types/index";
 
 export function meta({}: Route.MetaArgs) {
   return [
