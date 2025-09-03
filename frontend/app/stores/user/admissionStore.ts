@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface StudentInfo {
+interface StudentDetails {
   firstName: string;
   lastName: string;
-  middleName: string;
-  dob: string;
+  middleName?: string;
+  dob: string; // Stored as string (e.g., 'yyyy-MM-dd')
   gender: "Male" | "Female" | "";
   nationality: string;
   religion: string;
@@ -13,42 +13,49 @@ interface StudentInfo {
   phone: string;
   permanentAddress: string;
   currentAddress: string;
-  previousSchool: string;
-  lastGradeLevel: string;
-  guardianFullName: string;
-  guardianOccupation: string;
-  guardianPhone: string;
-  guardianEmail: string;
-  guardianAddress: string;
-  guardianRelationship: string;
-  emergencyContactPerson: string;
-  emergencyContactNumber: string;
 }
 
-interface Documents {
-  birthCert?: string;
-  reportCard?: string;
-  goodMoral?: string;
-  idParent?: string;
+interface StudentAcademic {
+  previousSchool: string;
+  levelCategory: string;
+  gradeLevels: string;
+  academicStrands: string;
+}
+
+interface StudentParents {
+  guardianFullName: string;
+  guardianOccupation: string;
+  guardianContactNumber: string;
+  guardianEmailAddress: string;
+  guardianAddress: string;
+  guardianRelationship: string;
 }
 
 interface AdmissionState {
-  studentInfo: StudentInfo | null;
-  documents: Documents;
-  setStudentInfo: (info: StudentInfo) => void;
-  setDocuments: (docs: Partial<Documents>) => void;
+  studentDetails: StudentDetails | null;
+  studentAcademic: StudentAcademic | null;
+  studentParents: StudentParents | null;
+  setStudentDetails: (info: StudentDetails) => void;
+  setStudentAcademic: (info: StudentAcademic) => void;
+  setStudentParents: (info: StudentParents) => void;
   reset: () => void;
 }
 
 export const useAdmissionStore = create<AdmissionState>()(
   persist(
     (set) => ({
-      studentInfo: null,
-      documents: {},
-      setStudentInfo: (info) => set({ studentInfo: info }),
-      setDocuments: (docs) =>
-        set((state) => ({ documents: { ...state.documents, ...docs } })),
-      reset: () => set({ studentInfo: null, documents: {} }),
+      studentDetails: null,
+      studentAcademic: null,
+      studentParents: null,
+      setStudentDetails: (info) => set({ studentDetails: info }),
+      setStudentAcademic: (info) => set({ studentAcademic: info }),
+      setStudentParents: (info) => set({ studentParents: info }),
+      reset: () =>
+        set({
+          studentDetails: null,
+          studentAcademic: null,
+          studentParents: null,
+        }),
     }),
     {
       name: "admission-storage",

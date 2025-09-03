@@ -27,7 +27,7 @@ import {
 import { Input } from "app/components/ui/input";
 import { Button } from "app/components/ui/button";
 import { useAdmissionStore } from "app/stores/user/admissionStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface SelectOption {
   value: string;
@@ -68,49 +68,58 @@ const gradeLevels: Record<string, SelectOption[]> = {
   ],
 };
 
-const formSchema = z
-  .object({
-    previousSchool: z.string().min(5, {
-      message: "Previous School is required.",
-    }),
-    levelCategory: z.string().min(1, "Please select a level category"),
-    gradeLevels: z.string().min(1, "Please select a grade level"),
-    academicStrands: z.enum(["STEM", "ABM", "HUMSS", "GAS", "N/A"]).optional(),
-  })
-  .superRefine((values, ctx) => {
-    if (
-      values.levelCategory === "seniorHighschool" &&
-      !values.academicStrands
-    ) {
-      ctx.addIssue({
-        path: ["academicStrand"],
-        code: z.ZodIssueCode.custom,
-        message: "Academic strand is required for Senior Highschool.",
-      });
-    }
-  });
+const formSchema = z.object({
+  previousSchool: z.string().min(5, {
+    message: "Previous School is required.",
+  }),
+  levelCategory: z.string().min(1, "Please select a level category"),
+  gradeLevels: z.string().min(1, "Please select a grade level"),
+  academicStrands: z.string().optional(),
+});
 
 export default function AdmissionGradeLevelForm() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const { setDocuments } = useAdmissionStore();
+  const { setStudentAcademic, studentAcademic } = useAdmissionStore();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      previousSchool: "",
-      levelCategory: "",
-      gradeLevels: undefined,
-      academicStrands: "N/A",
+      previousSchool: studentAcademic?.previousSchool || "",
+      levelCategory: studentAcademic?.levelCategory || "",
+      gradeLevels: studentAcademic?.gradeLevels || "",
+      academicStrands:
+        studentAcademic?.levelCategory === "seniorHighschool"
+          ? studentAcademic?.academicStrands || ""
+          : "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    if (values.levelCategory !== "seniorHighSchool") {
-      // exclude the academicStrands value when inserting to database.
+  // Sync selectedCategory with form's levelCategory
+  // Sync selectedCategory with form's levelCategory
+  useEffect(() => {
+    const levelCategory = form.getValues("levelCategory");
+    if (levelCategory !== selectedCategory) {
+      setSelectedCategory(levelCategory);
     }
-    navigate("/admission/step-4");
+  }, [form.getValues("levelCategory")]);
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+
+    if (values) {
+      setStudentAcademic({
+        previousSchool: values.previousSchool,
+        levelCategory: values.levelCategory,
+        gradeLevels: values.gradeLevels,
+        academicStrands:
+          values.levelCategory === "seniorHighschool"
+            ? values.academicStrands || ""
+            : "",
+      });
+
+      navigate("/admission/step-4");
+    }
   }
 
   const selectedGradeLevel = form.watch("levelCategory");
@@ -203,7 +212,7 @@ export default function AdmissionGradeLevelForm() {
               />
 
               {/* Grade Level Selection */}
-              {selectedCategory && (
+              {selectedGradeLevel && gradeLevels[selectedGradeLevel] && (
                 <FormField
                   control={form.control}
                   name="gradeLevels"
@@ -222,7 +231,7 @@ export default function AdmissionGradeLevelForm() {
                               )}
                             >
                               {field.value
-                                ? gradeLevels[selectedCategory].find(
+                                ? gradeLevels[selectedGradeLevel].find(
                                     (level) => level.value === field.value
                                   )?.label
                                 : "Select grade level"}
@@ -234,25 +243,30 @@ export default function AdmissionGradeLevelForm() {
                           <Command>
                             <CommandList>
                               <CommandGroup>
-                                {gradeLevels[selectedCategory].map((level) => (
-                                  <CommandItem
-                                    value={level.label}
-                                    key={level.value}
-                                    onSelect={() => {
-                                      form.setValue("gradeLevels", level.value);
-                                    }}
-                                  >
-                                    {level.label}
-                                    <Check
-                                      className={cn(
-                                        "ml-auto",
-                                        level.value === field.value
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                  </CommandItem>
-                                ))}
+                                {gradeLevels[selectedGradeLevel].map(
+                                  (level) => (
+                                    <CommandItem
+                                      value={level.label}
+                                      key={level.value}
+                                      onSelect={() => {
+                                        form.setValue(
+                                          "gradeLevels",
+                                          level.value
+                                        );
+                                      }}
+                                    >
+                                      {level.label}
+                                      <Check
+                                        className={cn(
+                                          "ml-auto",
+                                          level.value === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                    </CommandItem>
+                                  )
+                                )}
                               </CommandGroup>
                             </CommandList>
                           </Command>

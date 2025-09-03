@@ -14,7 +14,8 @@ import {
 import { Input } from "app/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { useAdmissionStore } from "~/stores/user/admissionStore";
+import { useFileStore } from "~/stores/user/admissionFileStore";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   birthCert: z.instanceof(File, { message: "Birth certificate is required." }),
@@ -42,26 +43,54 @@ const formSchema = z.object({
 });
 
 export default function AdmissionDocumentForm() {
-  const { setDocuments } = useAdmissionStore();
+  const { setFile } = useFileStore();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      isBirthCerthReadable: false,
+      isReportCardReadable: false,
+      isGoodMoralReadable: false,
+      isIdParentReadable: false,
+    },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
 
-    // setDocuments({
-    //   birthCert: "",
-    //   reportCard: "",
-    //   goodMoral: "",
-    //   idParent: "",
-    // });
+    // CANT STORE FILES IN THE LOCALSTORAGE
+    // KAYA NAKA GLOBAL STATE MANAGEMENT LANG SIYAA
+    setFile("birthCert", values.birthCert);
+    setFile("goodMoral", values.goodMoral);
+    setFile("reportCard", values.reportCard);
+    setFile("idParent", values.idParent);
 
+    // YOU CAN SETUP THE API ROUTE AND SAVE TO DATABASE THE ADMISSION DATA.
+
+    // ALL DATA TYPE ARE IN THE app/store/user
+
+    // GO TO HOME NA TO AFTER SUBMITTING
     navigate("/");
   }
+
+  useEffect(() => {
+    const urls: string[] = [];
+    const files = form.watch();
+    if (files.birthCert) urls.push(URL.createObjectURL(files.birthCert));
+    if (files.reportCard) urls.push(URL.createObjectURL(files.reportCard));
+    if (files.goodMoral) urls.push(URL.createObjectURL(files.goodMoral));
+    if (files.idParent) urls.push(URL.createObjectURL(files.idParent));
+
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [
+    form.watch("birthCert"),
+    form.watch("reportCard"),
+    form.watch("goodMoral"),
+    form.watch("idParent"),
+  ]);
   return (
     <main>
       <div>

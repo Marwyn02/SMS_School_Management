@@ -82,23 +82,23 @@ const formSchema = z.object({
 });
 
 export default function AdmissionForm() {
-  const { setStudentInfo } = useAdmissionStore();
+  const { setStudentDetails, studentDetails } = useAdmissionStore();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      middleName: "",
-      dob: "" as unknown as Date,
-      gender: undefined,
-      nationality: "",
-      religion: "",
-      phone: "",
-      email: "",
-      permanentAddress: "",
-      currentAddress: "",
+      firstName: studentDetails?.firstName || "",
+      lastName: studentDetails?.lastName || "",
+      middleName: studentDetails?.middleName || "",
+      dob: studentDetails?.dob ? new Date(studentDetails.dob) : undefined,
+      gender: studentDetails?.gender || "",
+      nationality: studentDetails?.nationality || "",
+      religion: studentDetails?.religion || "",
+      email: studentDetails?.email || "",
+      phone: studentDetails?.phone || "",
+      permanentAddress: studentDetails?.permanentAddress || "",
+      currentAddress: studentDetails?.currentAddress || "",
     },
   });
 
@@ -106,21 +106,25 @@ export default function AdmissionForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
 
-    // setStudentInfo({
-    //   firstName: "",
-    //   lastName: "",
-    //   middleName: "",
-    //   dob: "",
-    //   gender: "",
-    //   nationality: "",
-    //   religion: "",
-    //   phone: "",
-    //   email: "",
-    //   permanentAddress: "",
-    //   currentAddress: "",
-    //   previousSchool: "",
+    const dobString = values.dob ? format(values.dob, "yyyy-MM-dd") : "";
 
-    navigate("/admission/step-2");
+    if (values) {
+      setStudentDetails({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        middleName: values.middleName || "",
+        dob: dobString,
+        gender: values.gender,
+        nationality: values.nationality,
+        religion: values.religion,
+        email: values.email,
+        phone: values.phone,
+        permanentAddress: values.permanentAddress,
+        currentAddress: values.currentAddress,
+      });
+
+      navigate("/admission/step-2");
+    }
   }
   return (
     <Form {...form}>

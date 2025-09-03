@@ -37,36 +37,36 @@ const formSchema = z.object({
 });
 
 export default function AdmissionParentForm() {
-  const { setDocuments } = useAdmissionStore();
+  const { setStudentParents, studentParents } = useAdmissionStore();
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      guardianFullName: "",
-      guardianOccupation: "",
-      guardianContactNumber: "",
-      guardianEmailAddress: "",
-      guardianAddress: "",
-      guardianRelationship: "",
+      guardianFullName: studentParents?.guardianFullName || "",
+      guardianOccupation: studentParents?.guardianOccupation || "",
+      guardianContactNumber: studentParents?.guardianContactNumber || "",
+      guardianEmailAddress: studentParents?.guardianEmailAddress || "",
+      guardianAddress: studentParents?.guardianAddress || "",
+      guardianRelationship: studentParents?.guardianRelationship || "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
 
-    navigate("/admission/step-3");
+    if (values) {
+      setStudentParents({
+        guardianFullName: values.guardianFullName,
+        guardianOccupation: values.guardianOccupation,
+        guardianContactNumber: values.guardianContactNumber,
+        guardianEmailAddress: values.guardianEmailAddress,
+        guardianAddress: values.guardianAddress,
+        guardianRelationship: values.guardianRelationship,
+      });
 
-    // setDocuments({
-    // guardianFullName: "",
-    //   guardianOccupation: "",
-    //   guardianContactNumber: "",
-    //   guardianEmailAddress: "",
-    //   guardianAddress: "",
-    //   guardianRelationship: "",
-    //   emergencyContactPerson: "",
-    //   emergencyContactNumber: "",
-    // });
+      navigate("/admission/step-3");
+    }
   }
   return (
     <main>
