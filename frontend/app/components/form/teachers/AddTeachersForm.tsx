@@ -9,9 +9,7 @@ import { Button } from "app/components/ui/button";
 import { Calendar } from "app/components/ui/calendar";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "app/components/ui/command";
@@ -29,12 +27,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "app/components/ui/popover";
+import { Link, useNavigate } from "react-router";
 
 const genders = [
   { label: "Male", value: "Male" },
   { label: "Female", value: "Female" },
-  { label: "Other", value: "Other" },
-  { label: "Prefer not to say", value: "Prefer not to say" },
 ] as const;
 
 const formSchema = z.object({
@@ -59,7 +56,7 @@ const formSchema = z.object({
         return date <= cutoff;
       },
       {
-        message: "You must be at least 18 years old.",
+        message: "Teacher must be at least 18 years old.",
       }
     ),
   phone: z
@@ -71,10 +68,11 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  gender: z.enum(["Male", "Female", "Other", "Prefer not to say"]),
+  gender: z.enum(["Male", "Female", ""]),
 });
 
 export default function AddTeachersForm() {
+  const navigate = useNavigate();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -85,7 +83,7 @@ export default function AddTeachersForm() {
       phone: "",
       address: "",
       email: "",
-      gender: "Prefer not to say",
+      gender: "",
     },
   });
 
@@ -94,6 +92,8 @@ export default function AddTeachersForm() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+
+    navigate("/dashboard/teachers");
   }
 
   return (
@@ -106,7 +106,7 @@ export default function AddTeachersForm() {
             <FormItem>
               <FormLabel>First name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
 
               <FormMessage />
@@ -120,7 +120,7 @@ export default function AddTeachersForm() {
             <FormItem>
               <FormLabel>Last name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -133,54 +133,115 @@ export default function AddTeachersForm() {
             <FormItem>
               <FormLabel>Middle name</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="dob"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date of birth</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    captionLayout="dropdown"
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <section className="grid grid-cols-2 gap-x-2">
+          <FormField
+            control={form.control}
+            name="dob"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Date of birth</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Select a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      captionLayout="dropdown"
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Gender</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? genders.find(
+                              (genders) => genders.value === field.value
+                            )?.label
+                          : "Select gender"}
+                        <ChevronsUpDown className="opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {genders.map((gender) => (
+                            <CommandItem
+                              value={gender.label}
+                              key={gender.value}
+                              onSelect={() => {
+                                form.setValue("gender", gender.value);
+                              }}
+                            >
+                              {gender.label}
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  gender.value === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </section>
 
         <FormField
           control={form.control}
@@ -189,21 +250,7 @@ export default function AddTeachersForm() {
             <FormItem>
               <FormLabel>Phone number</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Address</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -217,7 +264,7 @@ export default function AddTeachersForm() {
             <FormItem>
               <FormLabel>Email address</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -226,71 +273,28 @@ export default function AddTeachersForm() {
 
         <FormField
           control={form.control}
-          name="gender"
+          name="address"
           render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Gender</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value
-                        ? genders.find(
-                            (genders) => genders.value === field.value
-                          )?.label
-                        : "Select language"}
-                      <ChevronsUpDown className="opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search framework..."
-                      className="h-9"
-                    />
-                    <CommandList>
-                      <CommandEmpty>No framework found.</CommandEmpty>
-                      <CommandGroup>
-                        {genders.map((gender) => (
-                          <CommandItem
-                            value={gender.label}
-                            key={gender.value}
-                            onSelect={() => {
-                              form.setValue("gender", gender.value);
-                            }}
-                          >
-                            {gender.label}
-                            <Check
-                              className={cn(
-                                "ml-auto",
-                                gender.value === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+            <FormItem>
+              <FormLabel>Address</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Submit
-        </Button>
+        <section className="grid grid-cols-2 gap-x-2">
+          <Link to={"/dashboard/teachers"}>
+            <Button type="button" className="w-full" variant={"outline"}>
+              Cancel
+            </Button>
+          </Link>
+          <Button type="submit" className="w-full">
+            Create
+          </Button>
+        </section>
       </form>
     </Form>
   );

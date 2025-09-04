@@ -1,4 +1,4 @@
-import { useLocation } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,44 +34,44 @@ export default function AdminNav() {
 
       <section>
         <div className="bg-gray-200 flex items-center justify-start space-x-5 py-2 px-4 text-sm overflow-x-auto">
-          <a
-            href="/dashboard"
+          <NavLink
+            to={"/dashboard"}
             className={location.pathname === "/dashboard" ? "font-bold" : ""}
           >
             Dashboard
-          </a>
-          <a
-            href="/dashboard/students"
+          </NavLink>
+          <NavLink
+            to="/dashboard/students"
             className={
               location.pathname === "/dashboard/students" ? "font-bold" : ""
             }
           >
             Students
-          </a>
-          <a
-            href="/dashboard/admission"
+          </NavLink>
+          <NavLink
+            to="/dashboard/admission"
             className={
               location.pathname === "/dashboard/admission" ? "font-bold" : ""
             }
           >
             Admission
-          </a>
-          <a
-            href="/dashboard/teachers"
+          </NavLink>
+          <NavLink
+            to="/dashboard/teachers"
             className={
               location.pathname === "/dashboard/teachers" ? "font-bold" : ""
             }
           >
             Teachers
-          </a>
-          <a
-            href="/dashboard/classes"
+          </NavLink>
+          <NavLink
+            to="/dashboard/classes"
             className={
               location.pathname === "/dashboard/classes" ? "font-bold" : ""
             }
           >
             Classes
-          </a>
+          </NavLink>
         </div>
       </section>
     </nav>

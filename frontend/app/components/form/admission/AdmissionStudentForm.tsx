@@ -49,17 +49,8 @@ const formSchema = z.object({
     .date()
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
       message: "Invalid date format.",
-    })
-    .refine(
-      (date) => {
-        const cutoff = new Date();
-        cutoff.setFullYear(cutoff.getFullYear() - 18);
-        return date <= cutoff;
-      },
-      {
-        message: "You must be at least 18 years old.",
-      }
-    ),
+    }),
+
   gender: z.enum(["Male", "Female", ""]),
   nationality: z.string().min(2, {
     message: "Nationality is required.",
