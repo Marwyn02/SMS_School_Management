@@ -1,10 +1,11 @@
+import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
 import { cn } from "app/lib/utils";
-
 import { CalendarIcon, Check, ChevronsUpDown } from "lucide-react";
+
 import { Button } from "app/components/ui/button";
 import { Calendar } from "app/components/ui/calendar";
 import {
@@ -27,7 +28,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "app/components/ui/popover";
-import { Link, useNavigate } from "react-router";
+import { Checkbox } from "app/components/ui/checkbox";
+import { Label } from "app/components/ui/label";
+import { useAdmissionStore } from "app/stores/user/admissionStore";
 
 const genders = [
   { label: "Male", value: "Male" },
@@ -41,64 +44,84 @@ const formSchema = z.object({
   lastName: z.string().min(2, {
     message: "Last name must be at least 2 characters.",
   }),
-  middleName: z.string().min(2, {
-    message: "Middle name must be at least 2 characters.",
-  }),
+  middleName: z.string().optional(),
   dob: z
     .date()
     .refine((date) => date instanceof Date && !isNaN(date.getTime()), {
       message: "Invalid date format.",
-    })
-    .refine(
-      (date) => {
-        const cutoff = new Date();
-        cutoff.setFullYear(cutoff.getFullYear() - 18);
-        return date <= cutoff;
-      },
-      {
-        message: "Teacher must be at least 18 years old.",
-      }
-    ),
-  phone: z
-    .string()
-    .regex(/^(09\d{9}|\+639\d{9})$/, "Invalid Philippine phone number"),
-  address: z.string().min(5, {
-    message: "Address must be at least 5 characters.",
+    }),
+
+  gender: z.enum(["Male", "Female", ""]),
+  nationality: z.string().min(2, {
+    message: "Nationality is required.",
+  }),
+  religion: z.string().min(2, {
+    message: "This must be filled.",
   }),
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  gender: z.enum(["Male", "Female", ""]),
+  phone: z
+    .string()
+    .regex(/^(09\d{9}|\+639\d{9})$/, "Invalid Philippine phone number"),
+  permanentAddress: z.string().min(5, {
+    message: "Permanent address must be at least 5 characters.",
+  }),
+  currentAddress: z.string().min(5, {
+    message: "Current address must be at least 5 characters.",
+  }),
 });
 
-export default function AddTeachersForm() {
+export default function AdmissionForm() {
+  const { setStudentDetails, studentDetails } = useAdmissionStore();
   const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      middleName: "",
-      dob: "" as unknown as Date,
-      phone: "",
-      address: "",
-      email: "",
-      gender: "",
+      firstName: studentDetails?.firstName || "",
+      lastName: studentDetails?.lastName || "",
+      middleName: studentDetails?.middleName || "",
+      dob: studentDetails?.dob ? new Date(studentDetails.dob) : undefined,
+      gender: studentDetails?.gender || "",
+      nationality: studentDetails?.nationality || "",
+      religion: studentDetails?.religion || "",
+      email: studentDetails?.email || "",
+      phone: studentDetails?.phone || "",
+      permanentAddress: studentDetails?.permanentAddress || "",
+      currentAddress: studentDetails?.currentAddress || "",
     },
   });
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     console.log(values);
 
-    navigate("/dashboard/teachers");
-  }
+    const dobString = values.dob ? format(values.dob, "yyyy-MM-dd") : "";
 
+    if (values) {
+      setStudentDetails({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        middleName: values.middleName || "",
+        dob: dobString,
+        gender: values.gender,
+        nationality: values.nationality,
+        religion: values.religion,
+        email: values.email,
+        phone: values.phone,
+        permanentAddress: values.permanentAddress,
+        currentAddress: values.currentAddress,
+      });
+
+      navigate("/admission/step-2");
+    }
+  }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <h1 className="text-2xl font-semibold">Student Information</h1>
+
         <FormField
           control={form.control}
           name="firstName"
@@ -113,34 +136,36 @@ export default function AddTeachersForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="lastName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Last name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="middleName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Middle name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-4">
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="middleName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Middle name</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <section className="grid grid-cols-2 gap-x-2">
+        <div className="grid grid-cols-2 gap-4 py-2">
           <FormField
             control={form.control}
             name="dob"
@@ -153,14 +178,14 @@ export default function AddTeachersForm() {
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
                         {field.value ? (
                           format(field.value, "PPP")
                         ) : (
-                          <span>Select a date</span>
+                          <span>Pick a date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -241,7 +266,35 @@ export default function AddTeachersForm() {
               </FormItem>
             )}
           />
-        </section>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="nationality"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nationality</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="religion"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Religion</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -273,10 +326,10 @@ export default function AddTeachersForm() {
 
         <FormField
           control={form.control}
-          name="address"
+          name="permanentAddress"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Address</FormLabel>
+              <FormLabel>Permanent address</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -285,16 +338,43 @@ export default function AddTeachersForm() {
           )}
         />
 
-        <section className="grid grid-cols-2 gap-x-2">
-          <Link to={"/dashboard/teachers"}>
-            <Button type="button" className="w-full" variant={"outline"}>
-              Cancel
-            </Button>
-          </Link>
-          <Button type="submit" className="w-full">
-            Create
+        <FormField
+          control={form.control}
+          name="currentAddress"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Current address</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex items-start gap-3">
+          <Checkbox id="terms-2" defaultChecked />
+          <div className="grid gap-2">
+            <Label htmlFor="terms-2">Accept terms and conditions</Label>
+            <p className="text-muted-foreground text-sm">
+              By clicking this checkbox, you agree to the terms and conditions.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-2">
+          <Button
+            type="button"
+            variant={"outline"}
+            className="w-full"
+            onClick={() => navigate("/")}
+          >
+            Cancel
           </Button>
-        </section>
+          <Button type="submit" className="w-full">
+            Save and Continue
+          </Button>
+        </div>
       </form>
     </Form>
   );
