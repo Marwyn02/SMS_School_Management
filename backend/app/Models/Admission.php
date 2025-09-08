@@ -21,15 +21,15 @@ class Admission extends Model
         "status",
     ];
 
-    public function academicInfo() {
+    public function academic() {
         return $this->hasOne(AcademicInfo::class);
     }
 
-    public function documentInfo() {
+    public function document() {
         return $this->hasOne(DocumentInfo::class);
     }
 
-    public function guardianInfo(){
+    public function guardian(){
         return $this->hasOne(GuardianInfo::class);
     }
 }

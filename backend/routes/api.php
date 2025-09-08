@@ -12,10 +12,4 @@ Route::get('/user', function (Request $request) {
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 
-Route::controller(AdmissionController::class)->prefix('admissions')->group(function() {
-    Route::post('/step1', 'step1');
-    Route::post('/step2', 'step2');
-    Route::post('/step3', 'step3');
-    Route::post('/step4', 'step4');
-});
-
+Route::post('/step4', [AdmissionController::class, 'step4']);
