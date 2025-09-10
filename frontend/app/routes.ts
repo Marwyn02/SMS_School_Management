@@ -12,10 +12,14 @@ export default [
   route("dashboard", "routes/admin/index.tsx"),
 
   route("dashboard/students", "routes/admin/students/index.tsx"),
-  route("dashboard/students/:studentId", "routes/admin/students/view.tsx"),
+  route(
+    "dashboard/students/:studentId/profile",
+    "routes/admin/students/view.tsx"
+  ),
 
   route("dashboard/teachers", "routes/admin/teachers/index.tsx"),
   route("dashboard/teachers/add", "routes/admin/teachers/add.tsx"),
+  route("dashboard/teachers/:teacherId", "routes/admin/teachers/view.tsx"),
 
   route("dashboard/classes", "routes/admin/classes.tsx"),
 
