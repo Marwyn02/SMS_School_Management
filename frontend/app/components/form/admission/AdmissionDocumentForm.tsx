@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import axios from "axios";
 
 import {
   Form,
@@ -14,8 +15,12 @@ import {
 import { Input } from "app/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { useFileStore } from "~/stores/user/admissionFileStore";
+import { useFileStore, type FileState } from "~/stores/user/admissionFileStore";
 import { useEffect } from "react";
+import {
+  useAdmissionStore,
+  type AdmissionState,
+} from "~/stores/user/admissionStore";
 
 const formSchema = z.object({
   birthCert: z.instanceof(File, { message: "Birth certificate is required." }),
@@ -56,22 +61,157 @@ export default function AdmissionDocumentForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function buildAdmissionPayload(
+    state: AdmissionState,
+    stateFiles: FileState["files"],
+    isReadable: FileState["isReadable"]
+  ) {
+    if (
+      !state.studentDetails ||
+      !state.studentAcademic ||
+      !state.studentParents
+    ) {
+      throw new Error("Incomplete admission data");
+    }
 
-    // CANT STORE FILES IN THE LOCALSTORAGE
-    // KAYA NAKA GLOBAL STATE MANAGEMENT LANG SIYAA
+    const formData = new FormData();
+
+    // student details
+    formData.append("first_name", state.studentDetails.firstName);
+    if (state.studentDetails.middleName) {
+      formData.append("middle_name", state.studentDetails.middleName);
+    }
+    formData.append("last_name", state.studentDetails.lastName);
+    formData.append("dob", state.studentDetails.dob);
+    formData.append("gender", state.studentDetails.gender);
+    formData.append("nationality", state.studentDetails.nationality);
+    formData.append("religion", state.studentDetails.religion);
+    formData.append("email", state.studentDetails.email);
+    formData.append("phone_number", state.studentDetails.phone);
+    formData.append("permanent_address", state.studentDetails.permanentAddress);
+    formData.append("current_address", state.studentDetails.currentAddress);
+
+    // guardian
+    formData.append(
+      "guardian[full_name]",
+      state.studentParents.guardianFullName
+    );
+    formData.append(
+      "guardian[relationship]",
+      state.studentParents.guardianRelationship
+    );
+    formData.append(
+      "guardian[phone_number]",
+      state.studentParents.guardianContactNumber
+    );
+    formData.append(
+      "guardian[email_address]",
+      state.studentParents.guardianEmailAddress
+    );
+    formData.append("guardian[address]", state.studentParents.guardianAddress);
+    formData.append(
+      "guardian[occupation]",
+      state.studentParents.guardianOccupation
+    );
+
+    // academic
+    formData.append(
+      "academic[previous_school]",
+      state.studentAcademic.previousSchool
+    );
+    formData.append(
+      "academic[level_category]",
+      state.studentAcademic.levelCategory
+    );
+    formData.append(
+      "academic[grade_levels]",
+      state.studentAcademic.gradeLevels
+    );
+    formData.append(
+      "academic[academic_strands]",
+      state.studentAcademic.academicStrands
+    );
+
+    // documents (files)
+    // documents (files)
+    if (stateFiles?.birthCert) {
+      formData.append("documents[birth_cert_url]", stateFiles.birthCert);
+      formData.append(
+        "documents[is_birth_cert_readable]",
+        isReadable.birthCert ? "1" : "0"
+      );
+    }
+    if (stateFiles?.reportCard) {
+      formData.append("documents[report_card_url]", stateFiles.reportCard);
+      formData.append(
+        "documents[is_report_card_readable]",
+        isReadable.reportCard ? "1" : "0"
+      );
+    }
+    if (stateFiles?.goodMoral) {
+      formData.append("documents[good_moral_url]", stateFiles.goodMoral);
+      formData.append(
+        "documents[is_good_moral_readable]",
+        isReadable.goodMoral ? "1" : "0"
+      );
+    }
+    if (stateFiles?.idParent) {
+      formData.append("documents[parent_id_url]", stateFiles.idParent);
+      formData.append(
+        "documents[is_parent_id_readable]",
+        isReadable.idParent ? "1" : "0"
+      );
+    }
+
+    console.log("FormData entries:");
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    return formData;
+  }
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const state = useAdmissionStore.getState();
+    const payload = buildAdmissionPayload(state, values, {
+      birthCert: values.isBirthCerthReadable,
+      reportCard: values.isReportCardReadable,
+      goodMoral: values.isGoodMoralReadable,
+      idParent: values.isIdParentReadable,
+    });
+
     setFile("birthCert", values.birthCert);
     setFile("goodMoral", values.goodMoral);
     setFile("reportCard", values.reportCard);
     setFile("idParent", values.idParent);
 
-    // YOU CAN SETUP THE API ROUTE AND SAVE TO DATABASE THE ADMISSION DATA.
+    console.log("Payload: ", payload);
 
-    // ALL DATA TYPE ARE IN THE app/store/user
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/step4",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          // withCredentials: true, // 👈 include cookies if your Laravel uses Sanctum
+        }
+      );
 
-    // GO TO HOME NA TO AFTER SUBMITTING
-    navigate("/");
+      console.log("Admission saved:", response.data);
+      return response.data;
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error:", error.response?.data || error.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+
+    // navigate("/");
+    //  return result;
   }
 
   useEffect(() => {

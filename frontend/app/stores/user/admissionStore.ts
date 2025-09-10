@@ -31,7 +31,7 @@ interface StudentParents {
   guardianRelationship: string;
 }
 
-interface AdmissionState {
+export interface AdmissionState {
   studentDetails: StudentDetails | null;
   studentAcademic: StudentAcademic | null;
   studentParents: StudentParents | null;
