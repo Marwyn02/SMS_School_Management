@@ -74,101 +74,60 @@ export default function AdmissionDocumentForm() {
       throw new Error("Incomplete admission data");
     }
 
-    const formData = new FormData();
+    const payload = {
+      first_name: state.studentDetails.firstName,
+      last_name: state.studentDetails.lastName,
+      ...(state.studentDetails.middleName && {
+        middle_name: state.studentDetails.middleName,
+      }),
+      dob: state.studentDetails.dob,
+      gender: state.studentDetails.gender,
+      nationality: state.studentDetails.nationality,
+      religion: state.studentDetails.religion,
+      email: state.studentDetails.email,
+      phone_number: state.studentDetails.phone,
+      permanent_address: state.studentDetails.permanentAddress,
+      current_address: state.studentDetails.currentAddress,
+      status: "pending",
 
-    // student details
-    formData.append("first_name", state.studentDetails.firstName);
-    if (state.studentDetails.middleName) {
-      formData.append("middle_name", state.studentDetails.middleName);
-    }
-    formData.append("last_name", state.studentDetails.lastName);
-    formData.append("dob", state.studentDetails.dob);
-    formData.append("gender", state.studentDetails.gender);
-    formData.append("nationality", state.studentDetails.nationality);
-    formData.append("religion", state.studentDetails.religion);
-    formData.append("email", state.studentDetails.email);
-    formData.append("phone_number", state.studentDetails.phone);
-    formData.append("permanent_address", state.studentDetails.permanentAddress);
-    formData.append("current_address", state.studentDetails.currentAddress);
+      guardian: {
+        full_name: state.studentParents.guardianFullName,
+        relationship: state.studentParents.guardianRelationship,
+        phone_number: state.studentParents.guardianContactNumber,
+        email: state.studentParents.guardianEmailAddress,
+        address: state.studentParents.guardianAddress,
+        occupation: state.studentParents.guardianOccupation,
+      },
 
-    // guardian
-    formData.append(
-      "guardian[full_name]",
-      state.studentParents.guardianFullName
-    );
-    formData.append(
-      "guardian[relationship]",
-      state.studentParents.guardianRelationship
-    );
-    formData.append(
-      "guardian[phone_number]",
-      state.studentParents.guardianContactNumber
-    );
-    formData.append(
-      "guardian[email_address]",
-      state.studentParents.guardianEmailAddress
-    );
-    formData.append("guardian[address]", state.studentParents.guardianAddress);
-    formData.append(
-      "guardian[occupation]",
-      state.studentParents.guardianOccupation
-    );
+      academic: {
+        previous_school: state.studentAcademic.previousSchool,
+        level_category: state.studentAcademic.levelCategory,
+        grade_level: state.studentAcademic.gradeLevels,
+        academic_strands: state.studentAcademic.academicStrands,
+      },
 
-    // academic
-    formData.append(
-      "academic[previous_school]",
-      state.studentAcademic.previousSchool
-    );
-    formData.append(
-      "academic[level_category]",
-      state.studentAcademic.levelCategory
-    );
-    formData.append(
-      "academic[grade_levels]",
-      state.studentAcademic.gradeLevels
-    );
-    formData.append(
-      "academic[academic_strands]",
-      state.studentAcademic.academicStrands
-    );
+      documents: {
+        ...(stateFiles?.birthCert && {
+          birth_cert_url: stateFiles.birthCert,
+          is_birth_cert_readable: isReadable.birthCert,
+        }),
+        ...(stateFiles?.reportCard && {
+          report_card_url: stateFiles.reportCard,
+          is_report_card_readable: isReadable.reportCard,
+        }),
+        ...(stateFiles?.goodMoral && {
+          good_moral_url: stateFiles.goodMoral,
+          is_good_moral_readable: isReadable.goodMoral,
+        }),
+        ...(stateFiles?.idParent && {
+          parent_id_url: stateFiles.idParent,
+          is_parent_id_readable: isReadable.idParent,
+        }),
+      },
+    };
 
-    // documents (files)
-    // documents (files)
-    if (stateFiles?.birthCert) {
-      formData.append("documents[birth_cert_url]", stateFiles.birthCert);
-      formData.append(
-        "documents[is_birth_cert_readable]",
-        isReadable.birthCert ? "1" : "0"
-      );
-    }
-    if (stateFiles?.reportCard) {
-      formData.append("documents[report_card_url]", stateFiles.reportCard);
-      formData.append(
-        "documents[is_report_card_readable]",
-        isReadable.reportCard ? "1" : "0"
-      );
-    }
-    if (stateFiles?.goodMoral) {
-      formData.append("documents[good_moral_url]", stateFiles.goodMoral);
-      formData.append(
-        "documents[is_good_moral_readable]",
-        isReadable.goodMoral ? "1" : "0"
-      );
-    }
-    if (stateFiles?.idParent) {
-      formData.append("documents[parent_id_url]", stateFiles.idParent);
-      formData.append(
-        "documents[is_parent_id_readable]",
-        isReadable.idParent ? "1" : "0"
-      );
-    }
-
-    console.log("FormData entries:");
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    return formData;
+    console.log("Payload:", payload);
+    return payload;
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -187,32 +146,73 @@ export default function AdmissionDocumentForm() {
 
     console.log("Payload: ", payload);
 
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/step4",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          // withCredentials: true, // 👈 include cookies if your Laravel uses Sanctum
-        }
-      );
+    // try {
+    //   const response = await axios.post(
+    //     "http://127.0.0.1:8000/api/step4",
+    //     payload,
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Accept: "application/json",
+    //       },
+    //       // withCredentials: true, // 👈 include cookies if your Laravel uses Sanctum
+    //     }
+    //   );
 
-      console.log("Admission saved:", response.data);
-      return response.data;
-    } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data || error.message);
-      } else {
-        console.error("Unexpected error:", error);
-      }
-    }
+    //   console.log("Admission saved:", response.data);
+    //   return response.data;
+    // } catch (error: any) {
+    //   if (axios.isAxiosError(error)) {
+    //     console.error("Axios error:", error.response?.data || error.message);
+    //   } else {
+    //     console.error("Unexpected error:", error);
+    //   }
+    // }
 
     // navigate("/");
     //  return result;
   }
+
+  //   {
+  //     "first_name": "Ronwel",
+  //     "last_name": "Catre",
+  //     "middle_name": "Malacapo",
+  //     "dob": "2003-05-31",
+  //     "gender": "Male",
+  //     "nationality": "Filipino",
+  //     "religion": "Catholic",
+  //     "email": "ronwel@gmail.com",
+  //     "phone_number": "09551353373",
+  //     "permanent_address": "091 Phase 2 Bayan-Bayanan",
+  //     "current_address": "091 Phase 2 Bayan-Bayanan",
+  //     "status": "pending",
+
+  //     "guardian": {
+  //         "full_name": "Rosalie",
+  //         "occupation": "Teacher",
+  //         "email": "rosalie@gmail.com",
+  //         "address": "Makati City",
+  //         "relationship": "Mother"
+  //     },
+
+  //     "academic": {
+  //         "previous_school": "San Lazaro",
+  //         "level_category": "highschool",
+  //         "grade_level": "Grade 10",
+  //         "academic_strands": ""
+  //     },
+
+  //     "documents": {
+  //         "birth_cert_url": "https://bucket.com/birth.jpg",
+  //         "report_card_url": "https://bucket.com/report.jpg",
+  //         "good_moral_url": "https://bucket.com/moral.jpg",
+  //         "parent_id_url": "https://bucket.com/parent.jpg",
+  //         "is_birth_cert_readable": true,
+  //         "is_report_card_readable": true,
+  //         "is_good_moral_readable": true,
+  //         "is_parent_id_readable": true
+  //     }
+  // }
 
   useEffect(() => {
     const urls: string[] = [];
