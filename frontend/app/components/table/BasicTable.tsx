@@ -1,4 +1,6 @@
 "use client";
+import type { LucideIcon } from "lucide-react";
+import clsx from "clsx";
 
 import {
   type ColumnDef,
@@ -18,14 +20,29 @@ import {
   TableRow,
 } from "app/components/ui/table";
 
+type Variant = "black" | "blue" | "red" | "green";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  title?: string;
+  icon?: LucideIcon;
+  variant?: Variant;
 }
+
+const variantStyles: Record<NonNullable<Variant>, { text: string }> = {
+  black: { text: "text-gray-600" },
+  blue: { text: "text-blue-600" },
+  green: { text: "text-green-600" },
+  red: { text: "text-red-600" },
+};
 
 export default function BasicTable<TData, TValue>({
   columns,
   data,
+  title,
+  icon: Icon,
+  variant = "black",
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -34,8 +51,15 @@ export default function BasicTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const { text } = variantStyles[variant];
+
   return (
     <div className="overflow-hidden rounded-md border">
+      <div className={clsx("p-2 flex items-center gap-x-2", text)}>
+        {Icon && <Icon size={20} />}
+        <h1 className="text-xl font-bold text-black">{title}</h1>
+      </div>
+
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

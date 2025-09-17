@@ -14,14 +14,15 @@ export type TTeachers = {
   email: string;
 };
 
-export type TClasses = {
+export interface TClasses {
   id: string;
-  className: string;
+  class: string;
+  section: string;
   teacher: string;
-  subject: string;
   studentsEnrolled: number;
-  schedule: string;
-};
+  room: string;
+  academicYear: string;
+}
 
 export type TAdmission = {
   applicationId: string;
@@ -321,115 +322,129 @@ export async function getClasses(): Promise<TClasses[]> {
   return [
     {
       id: "c01",
-      className: "Grade 10 - Section A",
-      subject: "Mathematics",
+      class: "Grade 10",
+      section: "Section A",
       teacher: "Maria Santos",
       studentsEnrolled: 35,
-      schedule: "MWF 10:00–11:30 AM",
+      room: "101",
+      academicYear: "2025–2026",
     },
     {
       id: "c02",
-      className: "Grade 10 - Section B",
-      subject: "Science",
+      class: "Grade 10",
+      section: "Section B",
       teacher: "Carmela Dela Cruz",
       studentsEnrolled: 32,
-      schedule: "TTh 9:00–10:30 AM",
+      room: "102",
+      academicYear: "2025–2026",
     },
     {
       id: "c03",
-      className: "Grade 11 - Section A",
-      subject: "English",
+      class: "Grade 11",
+      section: "Section A",
       teacher: "Jose Ramirez",
       studentsEnrolled: 28,
-      schedule: "MWF 1:00–2:30 PM",
+      room: "201",
+      academicYear: "2025–2026",
     },
     {
       id: "c04",
-      className: "Grade 11 - Section B",
-      subject: "History",
+      class: "Grade 11",
+      section: "Section B",
       teacher: "Ramon Villanueva",
       studentsEnrolled: 30,
-      schedule: "TTh 2:00–3:30 PM",
+      room: "202",
+      academicYear: "2025–2026",
     },
     {
       id: "c05",
-      className: "Grade 12 - Section A",
-      subject: "Physics",
+      class: "Grade 12",
+      section: "Section A",
       teacher: "Anthony Reyes",
       studentsEnrolled: 27,
-      schedule: "MWF 3:00–4:30 PM",
+      room: "301",
+      academicYear: "2025–2026",
     },
     {
       id: "c06",
-      className: "Grade 12 - Section B",
-      subject: "Chemistry",
+      class: "Grade 12",
+      section: "Section B",
       teacher: "Patrick Sy",
       studentsEnrolled: 29,
-      schedule: "TTh 10:00–11:30 AM",
+      room: "302",
+      academicYear: "2025–2026",
     },
     {
       id: "c07",
-      className: "Grade 9 - Section A",
-      subject: "Computer Science",
+      class: "Grade 9",
+      section: "Section A",
       teacher: "Angela Bautista",
       studentsEnrolled: 36,
-      schedule: "MWF 8:00–9:30 AM",
+      room: "103",
+      academicYear: "2025–2026",
     },
     {
       id: "c08",
-      className: "Grade 9 - Section B",
-      subject: "Biology",
+      class: "Grade 9",
+      section: "Section B",
       teacher: "Janine Flores",
       studentsEnrolled: 34,
-      schedule: "TTh 1:00–2:30 PM",
+      room: "104",
+      academicYear: "2025–2026",
     },
     {
       id: "c09",
-      className: "Grade 8 - Section A",
-      subject: "Filipino",
+      class: "Grade 8",
+      section: "Section A",
       teacher: "Melissa Ong",
       studentsEnrolled: 33,
-      schedule: "MWF 11:00–12:30 PM",
+      room: "105",
+      academicYear: "2025–2026",
     },
     {
       id: "c10",
-      className: "Grade 8 - Section B",
-      subject: "Economics",
+      class: "Grade 8",
+      section: "Section B",
       teacher: "Roberto Chua",
       studentsEnrolled: 31,
-      schedule: "TTh 3:00–4:30 PM",
+      room: "106",
+      academicYear: "2025–2026",
     },
     {
       id: "c11",
-      className: "Grade 7 - Section A",
-      subject: "Arts",
+      class: "Grade 7",
+      section: "Section A",
       teacher: "Veronica Aquino",
       studentsEnrolled: 37,
-      schedule: "MWF 9:00–10:30 AM",
+      room: "107",
+      academicYear: "2025–2026",
     },
     {
       id: "c12",
-      className: "Grade 7 - Section B",
-      subject: "Music",
+      class: "Grade 7",
+      section: "Section B",
       teacher: "Cynthia Lee",
       studentsEnrolled: 35,
-      schedule: "TTh 8:00–9:30 AM",
+      room: "108",
+      academicYear: "2025–2026",
     },
     {
       id: "c13",
-      className: "Grade 11 - Section C",
-      subject: "Geography",
+      class: "Grade 11",
+      section: "Section C",
       teacher: "Mark Cruz",
       studentsEnrolled: 26,
-      schedule: "MWF 2:00–3:30 PM",
+      room: "203",
+      academicYear: "2025–2026",
     },
     {
       id: "c14",
-      className: "Grade 12 - Section C",
-      subject: "Literature",
+      class: "Grade 12",
+      section: "Section C",
       teacher: "Sophia Mendoza",
       studentsEnrolled: 25,
-      schedule: "TTh 4:00–5:30 PM",
+      room: "303",
+      academicYear: "2025–2026",
     },
   ];
 }
