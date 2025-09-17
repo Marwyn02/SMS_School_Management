@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import axios from "axios";
 
 import {
   Form,
@@ -14,8 +15,12 @@ import {
 import { Input } from "app/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { useFileStore } from "~/stores/user/admissionFileStore";
+import { useFileStore, type FileState } from "~/stores/user/admissionFileStore";
 import { useEffect } from "react";
+import {
+  useAdmissionStore,
+  type AdmissionState,
+} from "~/stores/user/admissionStore";
 
 const formSchema = z.object({
   birthCert: z.instanceof(File, { message: "Birth certificate is required." }),
@@ -56,23 +61,158 @@ export default function AdmissionDocumentForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  function buildAdmissionPayload(
+    state: AdmissionState,
+    stateFiles: FileState["files"],
+    isReadable: FileState["isReadable"]
+  ) {
+    if (
+      !state.studentDetails ||
+      !state.studentAcademic ||
+      !state.studentParents
+    ) {
+      throw new Error("Incomplete admission data");
+    }
 
-    // CANT STORE FILES IN THE LOCALSTORAGE
-    // KAYA NAKA GLOBAL STATE MANAGEMENT LANG SIYAA
+    const payload = {
+      first_name: state.studentDetails.firstName,
+      last_name: state.studentDetails.lastName,
+      ...(state.studentDetails.middleName && {
+        middle_name: state.studentDetails.middleName,
+      }),
+      dob: state.studentDetails.dob,
+      gender: state.studentDetails.gender,
+      nationality: state.studentDetails.nationality,
+      religion: state.studentDetails.religion,
+      email: state.studentDetails.email,
+      phone_number: state.studentDetails.phone,
+      permanent_address: state.studentDetails.permanentAddress,
+      current_address: state.studentDetails.currentAddress,
+      status: "pending",
+
+      guardian: {
+        full_name: state.studentParents.guardianFullName,
+        relationship: state.studentParents.guardianRelationship,
+        phone_number: state.studentParents.guardianContactNumber,
+        email: state.studentParents.guardianEmailAddress,
+        address: state.studentParents.guardianAddress,
+        occupation: state.studentParents.guardianOccupation,
+      },
+
+      academic: {
+        previous_school: state.studentAcademic.previousSchool,
+        level_category: state.studentAcademic.levelCategory,
+        grade_level: state.studentAcademic.gradeLevels,
+        academic_strands: state.studentAcademic.academicStrands,
+      },
+
+      documents: {
+        ...(stateFiles?.birthCert && {
+          birth_cert_url: stateFiles.birthCert,
+          is_birth_cert_readable: isReadable.birthCert,
+        }),
+        ...(stateFiles?.reportCard && {
+          report_card_url: stateFiles.reportCard,
+          is_report_card_readable: isReadable.reportCard,
+        }),
+        ...(stateFiles?.goodMoral && {
+          good_moral_url: stateFiles.goodMoral,
+          is_good_moral_readable: isReadable.goodMoral,
+        }),
+        ...(stateFiles?.idParent && {
+          parent_id_url: stateFiles.idParent,
+          is_parent_id_readable: isReadable.idParent,
+        }),
+      },
+    };
+
+    console.log("Payload:", payload);
+    return payload;
+  }
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const state = useAdmissionStore.getState();
+    const payload = buildAdmissionPayload(state, values, {
+      birthCert: values.isBirthCerthReadable,
+      reportCard: values.isReportCardReadable,
+      goodMoral: values.isGoodMoralReadable,
+      idParent: values.isIdParentReadable,
+    });
+
     setFile("birthCert", values.birthCert);
     setFile("goodMoral", values.goodMoral);
     setFile("reportCard", values.reportCard);
     setFile("idParent", values.idParent);
 
-    // YOU CAN SETUP THE API ROUTE AND SAVE TO DATABASE THE ADMISSION DATA.
+    console.log("Payload: ", payload);
 
-    // ALL DATA TYPE ARE IN THE app/store/user
+    // try {
+    //   const response = await axios.post(
+    //     "http://127.0.0.1:8000/api/step4",
+    //     payload,
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Accept: "application/json",
+    //       },
+    //       // withCredentials: true, // 👈 include cookies if your Laravel uses Sanctum
+    //     }
+    //   );
 
-    // GO TO HOME NA TO AFTER SUBMITTING
-    navigate("/");
+    //   console.log("Admission saved:", response.data);
+    //   return response.data;
+    // } catch (error: any) {
+    //   if (axios.isAxiosError(error)) {
+    //     console.error("Axios error:", error.response?.data || error.message);
+    //   } else {
+    //     console.error("Unexpected error:", error);
+    //   }
+    // }
+
+    // navigate("/");
+    //  return result;
   }
+
+  //   {
+  //     "first_name": "Ronwel",
+  //     "last_name": "Catre",
+  //     "middle_name": "Malacapo",
+  //     "dob": "2003-05-31",
+  //     "gender": "Male",
+  //     "nationality": "Filipino",
+  //     "religion": "Catholic",
+  //     "email": "ronwel@gmail.com",
+  //     "phone_number": "09551353373",
+  //     "permanent_address": "091 Phase 2 Bayan-Bayanan",
+  //     "current_address": "091 Phase 2 Bayan-Bayanan",
+  //     "status": "pending",
+
+  //     "guardian": {
+  //         "full_name": "Rosalie",
+  //         "occupation": "Teacher",
+  //         "email": "rosalie@gmail.com",
+  //         "address": "Makati City",
+  //         "relationship": "Mother"
+  //     },
+
+  //     "academic": {
+  //         "previous_school": "San Lazaro",
+  //         "level_category": "highschool",
+  //         "grade_level": "Grade 10",
+  //         "academic_strands": ""
+  //     },
+
+  //     "documents": {
+  //         "birth_cert_url": "https://bucket.com/birth.jpg",
+  //         "report_card_url": "https://bucket.com/report.jpg",
+  //         "good_moral_url": "https://bucket.com/moral.jpg",
+  //         "parent_id_url": "https://bucket.com/parent.jpg",
+  //         "is_birth_cert_readable": true,
+  //         "is_report_card_readable": true,
+  //         "is_good_moral_readable": true,
+  //         "is_parent_id_readable": true
+  //     }
+  // }
 
   useEffect(() => {
     const urls: string[] = [];
