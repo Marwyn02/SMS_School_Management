@@ -1,6 +1,6 @@
-import { data, Link } from "react-router";
+import { Link } from "react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { GraduationCap, MoreHorizontal, UserRoundX, Users } from "lucide-react";
 
 import { Button } from "app/components/ui/button";
 import {
@@ -12,25 +12,76 @@ import {
 import BasicTable from "app/components/table/BasicTable";
 import Container from "app/components/ui/container";
 
-import { getData, type TStudent } from "app/components/table/data";
+import { getStudents, type TStudents } from "app/components/table/data";
 import { useState, useEffect } from "react";
+import StatsCard from "~/components/admin/card/StatsCard";
+import EditStudent from "~/components/admin/students/modal/EditStudent";
 
-const columns: ColumnDef<TStudent>[] = [
+const columns: ColumnDef<TStudents>[] = [
   {
-    accessorKey: "status",
-    header: "Status",
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "id",
+    header: "Student Id",
+    cell: ({ row }) => {
+      const student = row.original;
+
+      return (
+        <div>
+          <p className="capitalize">{student.id}</p>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "name",
-    header: "Name",
+    header: "Student",
+    cell: ({ row }) => {
+      const student = row.original;
+
+      return (
+        <div>
+          <p className="capitalize">
+            {student.last_name +
+              ", " +
+              student.first_name +
+              " " +
+              student.middle_name}
+          </p>
+          <p className="text-gray-500">{student.email_address}</p>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "year",
-    header: "Year Level",
+    accessorKey: "grade",
+    header: "Grade",
+    cell: ({ row }) => {
+      const student = row.original;
+
+      return (
+        <div>
+          <p className="capitalize">
+            Grade {student.grade} - Section {student.section}
+          </p>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const { status } = row.original;
+
+      return (
+        <div>
+          <p
+            className={`capitalize font-medium ${status === "active" ? "text-green-600" : status === "pending" ? "text-orange-400" : status === "inactive" ? "text-red-500" : "text-gray-600"}`}
+          >
+            {status}
+          </p>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "actions",
@@ -51,9 +102,9 @@ const columns: ColumnDef<TStudent>[] = [
                 View
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuItem onClick={() => console.log("Edit", student.id)}>
-              Edit
-            </DropdownMenuItem>
+
+            <EditStudent studentId={student.id} />
+
             <DropdownMenuItem
               onClick={() => console.log("Delete", student.id)}
               className="text-red-500"
@@ -68,13 +119,13 @@ const columns: ColumnDef<TStudent>[] = [
 ];
 
 export default function Students() {
-  const [students, setStudents] = useState<TStudent[]>([]);
+  const [students, setStudents] = useState<TStudents[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const data = await getData();
+        const data = await getStudents();
 
         setStudents(data);
       } catch (err) {
@@ -107,33 +158,38 @@ export default function Students() {
 
   return (
     <Container>
-      <h1 className="text-2xl font-bold">Student Page</h1>
+      <section className="flex justify-between items-end p-2 border rounded-md bg-gray-100">
+        <h1 className="text-2xl font-bold">Student Management</h1>
+      </section>
 
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 text-sm">
-        <div className="border p-3 rounded-md">
-          <p className="font-semibold">Total Student</p>
-          <p>{students.length}</p>
-        </div>
-        <div className="border p-3 rounded-md">
-          <p className="font-semibold">Total Active Students</p>
-          <p>{getActiveStudents.length}</p>
-        </div>
-        <div className="border p-3 rounded-md">
-          <p className="font-semibold">Total Graduated Students</p>
-          <p>{getGraduatedStudents.length}</p>
-        </div>
-        <div className="border p-3 rounded-md">
-          <p className="font-semibold">Total Pending Students</p>
-          <p>{getPendingStudents.length}</p>
-        </div>
-        <div className="border p-3 rounded-md">
-          <p className="font-semibold">Total Inactive Students</p>
-          <p>{getInactiveStudents.length}</p>
-        </div>
+        <StatsCard
+          title="Total Active Students"
+          stats={getActiveStudents.length}
+          icon={Users}
+          variant="blue"
+        />
+        <StatsCard
+          title="Total Graduated Students"
+          stats={getGraduatedStudents.length}
+          icon={GraduationCap}
+        />
+        <StatsCard
+          title="Total Inactive Students"
+          stats={getInactiveStudents.length}
+          icon={UserRoundX}
+          variant="red"
+        />
       </section>
 
       <div>
-        <BasicTable columns={columns} data={students} />
+        <BasicTable
+          columns={columns}
+          data={students}
+          title="Students List"
+          icon={Users}
+          variant="green"
+        />
       </div>
     </Container>
   );

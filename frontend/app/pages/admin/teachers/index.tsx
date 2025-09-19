@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "app/components/ui/dropdown-menu";
 import { Button } from "app/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { GraduationCap, MoreHorizontal, UserRoundX, Users } from "lucide-react";
 import { Link } from "react-router";
 import { useState, useEffect } from "react";
 import Container from "~/components/ui/container";
+import StatsCard from "~/components/admin/card/StatsCard";
+import AddTeachers from "~/components/admin/teachers/modal/AddTeachers";
 
 const columns: ColumnDef<TTeachers>[] = [
   {
@@ -101,36 +103,34 @@ export default function Teachers() {
   return (
     <main>
       <div className="container mx-auto px-4 pb-5 pt-28 space-y-4">
-        <h1 className="text-2xl font-bold">Teachers Page</h1>
-
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 text-sm">
-          <div className="border p-3 rounded-md">
-            <p className="font-semibold">Total Teachers</p>
-            <p>{teachers.length}</p>
-          </div>
-          <div className="border p-3 rounded-md">
-            <p className="font-semibold">Active Teachers</p>
-            <p>{getActiveTeachers.length}</p>
-          </div>
-          <div className="border p-3 rounded-md">
-            <p className="font-semibold">Inactive Teachers</p>
-            <p>{getInactiveTeachers.length}</p>
-          </div>
+        <section className="flex justify-between items-end p-2 border rounded-md bg-gray-100">
+          <h1 className="text-2xl font-bold">Teacher Management</h1>
+          <AddTeachers />
         </section>
 
-        <section className="flex justify-end">
-          <Link
-            to={"/dashboard/teachers/add"}
-            className="font-semibold text-sm"
-          >
-            <Button type="button" variant="outline">
-              Add Teacher
-            </Button>
-          </Link>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 text-sm">
+          <StatsCard
+            title="Total Active Teacher"
+            stats={getActiveTeachers.length}
+            icon={Users}
+            variant="green"
+          />
+          <StatsCard
+            title="Inactive Teachers"
+            stats={getInactiveTeachers.length}
+            icon={UserRoundX}
+            variant="red"
+          />
         </section>
 
         <div>
-          <BasicTable columns={columns} data={teachers} />
+          <BasicTable
+            columns={columns}
+            data={teachers}
+            title={"Teachers List"}
+            icon={GraduationCap}
+            variant="black"
+          />
         </div>
       </div>
     </main>
