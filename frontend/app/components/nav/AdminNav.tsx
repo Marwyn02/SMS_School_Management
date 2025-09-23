@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,9 +7,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "app/components/ui/dropdown-menu";
+import { signOut } from "~/services/auth";
+import { useAuth } from "~/context/AuthContext";
 
 export default function AdminNav() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { session } = useAuth();
+
+  const handleLogoutUser = async () => {
+    try {
+      await signOut();
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 w-full">
@@ -23,11 +36,18 @@ export default function AdminNav() {
             <p className="h-8 w-8 rounded-full bg-gray-400"></p>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            {session && (
+              <DropdownMenuLabel>
+                {session.user.user_metadata.display_name ?? session.user.email}
+              </DropdownMenuLabel>
+            )}
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogoutUser}>
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
