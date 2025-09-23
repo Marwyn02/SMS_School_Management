@@ -3,6 +3,7 @@ import type { Route } from "../teachers/+types/view";
 import Teacher from "app/pages/admin/teachers/view";
 import Container from "app/components/ui/container";
 import { useParams } from "react-router";
+import { ProtectedRoute } from "~/protection/ProtectedRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,8 +20,16 @@ export default function AdminTeachersDetail() {
   const { teacherId } = useParams();
 
   if (!teacherId) {
-    return <Container>Invalid teacher ID</Container>;
+    return (
+      <ProtectedRoute>
+        <Container>Invalid teacher ID</Container>
+      </ProtectedRoute>
+    );
   }
 
-  return <Teacher teacherId={teacherId} />;
+  return (
+    <ProtectedRoute>
+      <Teacher teacherId={teacherId} />
+    </ProtectedRoute>
+  );
 }

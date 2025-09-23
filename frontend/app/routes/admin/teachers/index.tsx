@@ -1,5 +1,6 @@
 import Teachers from "~/pages/admin/teachers";
 import type { Route } from "../teachers/+types/index";
+import { ProtectedRoute } from "~/protection/ProtectedRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +10,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function AdminTeachersDashboard() {
-  return <Teachers />;
+  return (
+    <ProtectedRoute>
+      <Teachers />
+    </ProtectedRoute>
+  );
 }

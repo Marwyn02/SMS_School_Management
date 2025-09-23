@@ -3,6 +3,7 @@ import type { Route } from "../students/+types/view";
 import Student from "~/pages/admin/students/view";
 import Container from "app/components/ui/container";
 import { useParams } from "react-router";
+import { ProtectedRoute } from "~/protection/ProtectedRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -19,8 +20,16 @@ export default function AdminStudentsDetail() {
   const { studentId } = useParams();
 
   if (!studentId) {
-    return <Container>Invalid student ID</Container>;
+    return (
+      <ProtectedRoute>
+        <Container>Invalid student ID</Container>
+      </ProtectedRoute>
+    );
   }
 
-  return <Student studentId={studentId} />;
+  return (
+    <ProtectedRoute>
+      <Student studentId={studentId} />
+    </ProtectedRoute>
+  );
 }
