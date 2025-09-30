@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import type { ColumnDef } from "@tanstack/react-table";
+import { useDeleteStudents, useStudents } from "~/hooks/useStudents";
 import { GraduationCap, MoreHorizontal, UserRoundX, Users } from "lucide-react";
 
 import { Button } from "app/components/ui/button";
@@ -12,10 +13,10 @@ import {
 import BasicTable from "app/components/table/BasicTable";
 import Container from "app/components/ui/container";
 
-import { getStudents, type TStudents } from "app/components/table/data";
-import { useState, useEffect } from "react";
+import { type TStudents } from "app/components/table/data";
 import StatsCard from "~/components/admin/card/StatsCard";
 import EditStudent from "~/components/admin/students/modal/EditStudent";
+import DeleteModal from "~/components/admin/students/modal/DeleteModal";
 
 const columns: ColumnDef<TStudents>[] = [
   {
@@ -92,7 +93,11 @@ const columns: ColumnDef<TStudents>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              data-testid={`actions-btn-${student.id}`}
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -105,12 +110,12 @@ const columns: ColumnDef<TStudents>[] = [
 
             <EditStudent studentId={student.id} />
 
-            <DropdownMenuItem
-              onClick={() => console.log("Delete", student.id)}
-              className="text-red-500"
-            >
-              Delete
-            </DropdownMenuItem>
+            <DeleteModal
+              id={student.id}
+              onDelete={async (id) => {
+                await useDeleteStudents(id);
+              }}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -119,40 +124,27 @@ const columns: ColumnDef<TStudents>[] = [
 ];
 
 export default function Students() {
-  const [students, setStudents] = useState<TStudents[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const data = await getStudents();
-
-        setStudents(data);
-      } catch (err) {
-        console.error("Error fetching students:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, []);
+  const { data: students = [], isLoading, isError, refetch } = useStudents();
 
   const getActiveStudents = students.filter((item) => item.status === "active");
   const getInactiveStudents = students.filter(
     (item) => item.status === "inactive"
   );
-  const getPendingStudents = students.filter(
-    (item) => item.status === "pending"
-  );
   const getGraduatedStudents = students.filter(
     (item) => item.status === "graduated"
   );
 
-  if (loading)
+  if (isLoading)
     return (
       <Container>
         <p>Loading...</p>
+      </Container>
+    );
+
+  if (isError)
+    return (
+      <Container>
+        <p>Something went wrong</p>
       </Container>
     );
 

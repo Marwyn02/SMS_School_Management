@@ -1,5 +1,6 @@
 import Dashboard from "~/pages/admin/Dashboard";
 import type { Route } from "../admin/+types/index";
+import { ProtectedRoute } from "~/protection/ProtectedRoute";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +10,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function AdminDashboard() {
-  return <Dashboard />;
+  return (
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  );
 }

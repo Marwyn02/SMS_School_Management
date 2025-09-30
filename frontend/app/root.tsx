@@ -7,11 +7,14 @@ import {
   ScrollRestoration,
   useLocation,
 } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import MainNav from "./components/nav/MainNav";
 import AdminNav from "./components/nav/AdminNav";
+import Container from "./components/ui/container";
+import { AuthProvider } from "./context/AuthContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -37,21 +40,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {location.pathname.startsWith("/dashboard") ? (
-          <AdminNav />
-        ) : (
-          <MainNav />
-        )}
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <AuthProvider>
+          {location.pathname.startsWith("/dashboard") ? (
+            <AdminNav />
+          ) : (
+            <MainNav />
+          )}
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </AuthProvider>
       </body>
     </html>
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function App() {
-  return <Outlet />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+    </QueryClientProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -71,7 +82,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
+    <Container>
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (
@@ -79,6 +90,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           <code>{stack}</code>
         </pre>
       )}
-    </main>
+    </Container>
   );
 }

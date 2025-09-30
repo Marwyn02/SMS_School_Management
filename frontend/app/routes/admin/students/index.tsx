@@ -1,3 +1,4 @@
+import { ProtectedRoute } from "~/protection/ProtectedRoute";
 import type { Route } from "../students/+types/index";
 import Student from "~/pages/admin/students/index";
 
@@ -9,5 +10,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function AdminStudentsDashboard() {
-  return <Student />;
+  return (
+    <ProtectedRoute>
+      <Student />
+    </ProtectedRoute>
+  );
 }

@@ -21,7 +21,12 @@ export default [
   route("dashboard/teachers/add", "routes/admin/teachers/add.tsx"),
   route("dashboard/teachers/:teacherId", "routes/admin/teachers/view.tsx"),
 
-  route("dashboard/classes", "routes/admin/classes.tsx"),
+  route("dashboard/classes", "routes/admin/classes/index.tsx"),
+  route("dashboard/classes/:classId/detail", "routes/admin/classes/view.tsx"),
 
-  route("dashboard/admission", "routes/admin/admission.tsx"),
+  route("dashboard/admission", "routes/admin/admission/index.tsx"),
+  route(
+    "dashboard/admission/:admissionId/detail",
+    "routes/admin/admission/view.tsx"
+  ),
 ] satisfies RouteConfig;
