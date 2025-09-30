@@ -17,7 +17,7 @@ export default function AdminTeachersDashboard() {
   if (!classId) {
     return (
       <ProtectedRoute>
-        <Container>Invalid student ID</Container>
+        <Container>Invalid class number</Container>
       </ProtectedRoute>
     );
   }
